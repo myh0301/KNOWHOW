@@ -15,7 +15,7 @@ This script is the optimized version of ''alert_generation.py'' with the speed-u
 These two scripts are to transform the detection result into graph. And the benign one is also the get the Grubbs’ Test in the benign data according to Section 6.1 & 6.2.
 
 ### chainsummary.py
-This script is to generate the attack life cycle according to the result from ''alert_generate.py''.
+This script is to generate the attack life cycle according to the result from ''alert_generate.py'', which is the final result of KNOWHOW.
 
 
 
