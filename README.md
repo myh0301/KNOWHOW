@@ -17,5 +17,17 @@ These two scripts are to transform the detection result into graph. And the beni
 ### chainsummary.py
 This script is to generate the attack life cycle according to the result from ''alert_generate.py'', which is the final result of KNOWHOW.
 
+## Dataset Release
+### NewlySim Dataset
+We have utilized two new CVEs in NewlySim datasets for evaluation of KnowHow against 0-day vulnerability scenarios. In addition, we used a complex set of attack commands to expand the two vulnerabilities into two APT attacks. The datasets for the two APT attacks are released in the following link for facilitating further research: <https://pan.baidu.com/s/16xGnpQhaaWhJkDKQQqX1LA?pwd=1111>.
+
+Specifically, attack1-host1/2.zip records APT attack data built based on CVE-2023-22809 vulnerability, while attack1-host1/2.zip records APT attack data built based on CVE-2024-28085 vulnerability. And the detailed attack commandlines used by the two APT attacks are recorded in the corresponding images (attack1.png,attack2.png).
+
+### Mimic-Prov Dataset
+To evaluate the robustness of KnowHow against mimicry attacks, we constructed a mimicry dataset, Mimic-Prov, following the steps outlined in ^[A. Goyal, X. Han, G. Wang, and A. Bates, “Sometimes, you aren’t what you do: Mimicry attacks against provenance graph host intrusion detection systems,” in 30th Network and Distributed System Security Symposium, 2023.]. We are currently collating this dataset quickly and will release it ASAP.
+
+
+
+
 
 
