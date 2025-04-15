@@ -20,6 +20,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from multiprocessing import Pool
 M = 5
 start  = time.perf_counter()
+check_nnn = 0
+
 
 with open('clustered_phrases_dbscan.json', 'r') as f:
     cluster_results = json.load(f)
@@ -46,10 +48,10 @@ def find_closest_clusters(target_vector, cluster_results, top_n=3):
             _, vector = phrase_info
             sim = cosine_similarity([target_vector], [vector])[0][0]
             similarities.append((label, sim))
-    
+    #print('1')
     similarities.sort(key=lambda x: x[1], reverse=True)
     closest_labels = list(set([label for label, _ in similarities[:top_n]]))
-    
+    #print('2')
     return closest_labels
 
 def calculate_similarities(target_vector, cluster_results, closest_labels):
@@ -473,6 +475,7 @@ def process_log(s, nostril=False, top_keys=5):
         sub, verb, obj, cmd = log_svo_extract_nostril(s)
     else:
         sub, verb, obj, cmd = log_svo_extract(s)
+    #print('11111')
     if sub == "None111":
         s["tech_num"] = 'None'
         s['tech_score'] = '0'
@@ -483,6 +486,7 @@ def process_log(s, nostril=False, top_keys=5):
     obj_emb = encode_string(model, obj)
     cmd_emb = encode_string(model, cmd)
 
+    #print('22222')
     sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, top_n=3)
     sub_similarity_scores = calculate_similarities(sub_emb, cluster_results, sub_closest_labels)
     verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, top_n=3)
@@ -493,7 +497,7 @@ def process_log(s, nostril=False, top_keys=5):
     cmd_similarity_scores = calculate_similarities(cmd_emb, cluster_results, cmd_closest_labels)
 
     total_similarity_scores = {}
-
+    #print('33333')
     for key, score in sub_similarity_scores.items():
         if key not in total_similarity_scores:
             total_similarity_scores[key] = 0
@@ -513,9 +517,10 @@ def process_log(s, nostril=False, top_keys=5):
         if key not in total_similarity_scores:
             total_similarity_scores[key] = 0
         total_similarity_scores[key] += score
-    sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:top_keys]
+    sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:min(top_keys, len(total_similarity_scores.keys()))]
     ll, ss = '', ''
 
+    print('44444')
 
     for i in range(len(sorted_scores)):
         if sorted_scores[i][1] != 0:
@@ -527,7 +532,7 @@ def process_log(s, nostril=False, top_keys=5):
         s["anomaly_score"] = sorted_scores[0][1]
     else:
         s["anomaly_score"] = 0
-    
+    print('55555')
     return s
 
 filen = sys.argv[1]
