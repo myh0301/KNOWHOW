@@ -40,7 +40,7 @@ def encode_string(model, string):
         return None  # 如果没有有效的词向量，返回None
     
     return np.mean(vectors, axis=0)
-
+'''
 def find_closest_clusters(target_vector, cluster_results, top_n=3):
     similarities = []
     for label, phrases in cluster_results.items():
@@ -53,12 +53,41 @@ def find_closest_clusters(target_vector, cluster_results, top_n=3):
     closest_labels = list(set([label for label, _ in similarities[:top_n]]))
     #print('2')
     return closest_labels
+'''
 
+def find_closest_clusters(target_vector, cluster_results, top_n=3):
+    similarities = []
+    for label, info in cluster_results.items():
+        center_vector = np.array(info['center'])
+        sim = cosine_similarity([target_vector], [center_vector])[0][0]
+        similarities.append((label, sim))
+    
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    closest_labels = [label for label, _ in similarities[:top_n]]
+    return closest_labels
+
+'''
 def calculate_similarities(target_vector, cluster_results, closest_labels):
     similarity_scores = {}
     
     for label in closest_labels:
         for phrase_info in cluster_results[label]:
+            original_phrase, vector = phrase_info
+            key = original_phrase.split('*****')[0]  # 提取key
+            
+            sim = cosine_similarity([target_vector], [vector])[0][0]
+            
+            if key not in similarity_scores:
+                similarity_scores[key] = 0
+            similarity_scores[key] += sim
+    
+    return similarity_scores
+'''
+def calculate_similarities(target_vector, cluster_results, closest_labels):
+    similarity_scores = {}
+    
+    for label in closest_labels:
+        for phrase_info in cluster_results[label]['points']:
             original_phrase, vector = phrase_info
             key = original_phrase.split('*****')[0]  # 提取key
             
@@ -313,6 +342,7 @@ def log_svo_extract_nostril(log):
                     return ssss, ssss, ssss, ssss
             
             #if(s["evt.args"].find("-n.s/^cpu\\s//p./proc/stat.") != -1):
+
         subject1 = subject1.replace('sh ', 'shell ')
         subject1 = subject1.replace('bash ', 'bash shell ')
         subject1 = subject1.replace('cp ', 'copy ')
