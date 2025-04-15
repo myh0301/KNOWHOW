@@ -1,0 +1,72 @@
+设计及使用文档
+一、	设计文档
+本项目主要包括一个关键概念和三个基本步骤。
+a)	关键概念：泛化妥协指标（gIoC）
+泛化妥协指标是一种信息三元组，形如<subject, verb, object>，用于存储广泛的网络威胁情报中的攻击知识。这种知识表示结构的思想来源系统日志中的核心信息（<process, syscall, object(file, IP, process)>），恰好是主谓宾三元组，可以一一对应。
+i.	具体subject，verb，object定义如下：
+1.	subject：这是一种攻击相关概念（N），具体来说，它可以是：
+a)	N可以是一个IoC，例如文件名、IP地址、文件哈希值、注册表项等；
+b)	N可以是域名；
+c)	N可以是软件或者进程的名字；
+d)	N可以是命令名及其全称；
+e)	N可以是泛化的系统对象概念，例如，“IP地址”，“进程”，“应用”，“软件”等。
+2.	verb：对于N所在句子，N所使用的谓语动词
+3.	object：对于N所在句子，N的作用对象
+ii.	为了增强攻击相关概念（N）的详细语义，我们进一步抽取其修饰词，例如：A malware may scan the browser’s login directory. N应为malware和directory，而后者显然存在更精确的描述，即browser’s login directory。故而我们实际抽取的<subject, verb, object>信息元组为<malware, scan, browser’s login directory>。
+b)	步骤一：利用大语言模型，从网络威胁情报中抽取上述泛化妥协指标。具体流程如下：
+i.	本步骤的输入是网络威胁情报文本，输出为其中包含的<subject, verb, object>信息三元组。具体来说，将前述<subject, verb, object> 三元组的基本概念作为prompt提供给LLM，同时提供给LLM需要抽取的CTI文本，以及个别抽取实例，由大模型进行抽取。
+ii.	一个可以使用的、典型的prompt形如：一个典型的prompt：你需要完成一个信息抽取任务，之后我们会为你提供待抽取的文段。任务内容如下：你需要抽取的信息，有下列特点，1，以<subject, verb，obeject>为抽取信息的基本结构；2，对于subject的定义是，在一个句子中，若存在名词主语满足定义（subject）的定义，则该名词主语为subject，若该主语存在直接修饰词，则一并抽取直接修饰词；3，对于verb的定义是，（同上，略）；4，对于object的定义是（同上，略）。我们给出几个实例，例如，对于句子A，你需要抽取的<subject, verb, object>为 a，b和c；对于句子B，你需要抽取的的<subject, verb, object>为 d，e和f。你需要抽取的文段为：xxxx。
+iii.	本步骤的优化提升：在这一过程中，我们基于思维链技术，让LLM逐步生成结果，即先抽取N、再抽取修饰词，最后组成三元组并进行检查。 
+c)	步骤二：基于embedding对齐策略的检测。具体流程如下：
+i.	本步骤的输入是系统日志，e，<process, syscall, fd, cmdline>，以及上述从威胁情报中抽取得到的信息三元组，t，<subject, verb, object>，输出为系统日志是否被威胁情报信息检出，产生告警。具体来说，由于系统日志以系统实体的形式存在，因此其语义特征与自然语言形式的威胁情报知识差别过大，因此我们需要进行语义对齐，才能进行识别与告警检出。具体的语义对齐策略包含两步。
+ii.	语义对齐(1)对于系统实体我们进行自然语言级别的语义提升，保留高级特征（类别），删去低级特征（实例IoC），规则示例如下表所示
+ 
+iii.	我们使用语言模型，对实体语义提升后的事件，e，和从CTI得到的信息三元组，t，分别进行语义编码，并以加和结果，分别作为事件 e 和三元组 t 的语义，并计算cos距离，若小于基于benign数据得到的告警阈值，则认为匹配成功。计算过程如下所示：
+ 
+iv.	本步骤的优化策略：对抽取得到信息三元组进行聚类合并，减少比对次数，提升检测效率。
+d)	步骤三：基于攻击生命周期和大语言模型的告警去噪与展示
+i.	本步骤的输入为产生告警的系统日志，输出为去噪的攻击告警，以及相对应的攻击报告。具体而言，我们首先利用攻击生命周期，对攻击告警图，进行总结，验证告警的合法性。进而，使用LLM进一步复核攻击告警是否合理，若两步检查都通过，则基于LLM的prompt，生成对应攻击报告作为结果。具体如下。
+ii.	对于攻击生命周期检查，我们首先命令的粒度，对告警行为进行初步整合，这一整和中，由同一个进程的同一个命令产生的告警边进行合并；合并过程中，我们将攻击技术，对于被同一个信息三元组类的三元组检测到的边直接合并。若合并的边，被标记到三元组类不同，我们则询问大模型，这两条边属于的命令语义是否相同，若一致，则合并。完成合并后的剩余边的三元组类，计作当前节点的三元组类；而后，对节点同样进行上述合并；将合并到的合并告警图，输入给LLM，并由基于攻击生命周期，识别合并告警图中每个节点所属的攻击生命周期，并判断输入的告警图是否可以组成一个完成的攻击生命周期，进行首次检查。
+iii.	若通过首次检查，即LLM认为当前告警可组成为完成的攻击生命周期。我们则利用LLM进行复核，进一步询问大模型是否认为当前攻击是APT攻击告警，若也能通过大模型的检查，则认为是正确告警。) 若是正确告警，则由LLM生成攻击报告。一个可用的prompt为： 我将会告诉你攻击发生的步骤和事件，以及使用的命令。请根据这些的攻击流信息，判断其是否为真实攻击。如果是，请以安全专家的角色，生成一份专业的攻击报告，内容包括但不限于攻击概述及详情、攻击指标、影响范围、防御手段、和攻击原理。具体的攻击流信息如下：xxxx。
+二、	使用文档
+以下 相对路径
+a)	使用方法一：直接使用知识：
+i.	训练
+利用知识对benign数据标注：python benigntag.py xxx(benign文件名，在当前目录的/benign_data文件夹中)：标注好的文件存储在当前目录的./benign_tag/文件夹中，名字为xxx_tag.json
+ii.	检测
+利用知识对检测数据标注：python techtag.py xxx(anomaly文件名，在当前目录的/anomaly_data文件夹中)：标注好的文件存储在当前目录的./anomaly_tag/文件夹中，名字为xxx_tag.json
+iii.	建图与事件告警
+python sysdig_graph_new2.py xxxx(标注好的anomaly_tag文件的路径) xxxx（同上） 2.0（threshold，根据benign_tag结果可调整）：生成的可能攻击大图在road_whole_xxxx.txt
+iv.	图级别告警去噪
+基于生命周期筛选：python todotfile.py road_whole_xxxx.txt
+v.	生成攻击报告
+基于上述步骤三中的大语言模型prompt，进行生成
+
+b)	使用方法二：使用embedding的知识（基于cpu）
+i.	训练
+将知识embedding：python parse_technique_result.py; python embedding_model.py; python ca_tech_dic.py
+利用知识对benign数据标注：python benigntag_paral.py xxx(benign文件名，在当前目录的/benign_data文件夹中)：标注好的文件存储在当前目录的./benign_tag/文件夹中，名字为xxx_tag.json
+ii.	检测
+利用知识对检测数据标注：python techtag_paral.py xxx(anomaly文件名，在当前目录的/anomaly_data文件夹中)：标注好的文件存储在当前目录的./anomaly_tag/文件夹中，名字为xxx_tag.json
+iii.	建图与事件告警
+python sysdig_graph_new2.py xxxx(标注好的anomaly_tag文件的路径) xxxx（同上） 2.0（threshold，根据benign_tag结果可调整）：生成的可能攻击大图在road_whole_xxxx.txt
+iv.	图级别告警去噪
+基于生命周期筛选：python todotfile.py road_whole_xxxx.txt
+v.	生成攻击报告
+基于上述步骤三中的大语言模型prompt，进行生成
+
+c)	使用方法二：使用embedding的知识（基于gpu）
+i.	训练
+将知识embedding：python parse_technique_result.py; python embedding_model.py; python ca_tech_dic.py
+利用知识对benign数据标注：python benigntag_paral_gpu.py xxx(benign文件名，在当前目录的/benign_data文件夹中)：标注好的文件存储在当前目录的./benign_tag/文件夹中，名字为xxx_tag.json
+ii.	检测
+利用知识对检测数据标注：python techtag_paral_gpu.py xxx(anomaly文件名，在当前目录的/anomaly_data文件夹中)：标注好的文件存储在当前目录的./anomaly_tag/文件夹中，名字为xxx_tag.json
+iii.	建图与事件告警
+python sysdig_graph_new2.py xxxx(标注好的anomaly_tag文件的路径) xxxx（同上） 2.0（threshold，根据benign_tag结果可调整）：生成的可能攻击大图在road_whole_xxxx.txt
+iv.	图级别告警去噪
+基于生命周期筛选：python todotfile.py road_whole_xxxx.txt
+d)	生成攻击报告
+基于上述步骤三中的大语言模型prompt，进行生成
+
+
+
