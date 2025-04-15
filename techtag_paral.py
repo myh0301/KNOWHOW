@@ -40,6 +40,7 @@ def encode_string(model, string):
     
     return np.mean(vectors, axis=0)
 
+'''
 def find_closest_clusters(target_vector, cluster_results, top_n=3):
     similarities = []
     for label, phrases in cluster_results.items():
@@ -47,17 +48,46 @@ def find_closest_clusters(target_vector, cluster_results, top_n=3):
             _, vector = phrase_info
             sim = cosine_similarity([target_vector], [vector])[0][0]
             similarities.append((label, sim))
-    
+    #print('1')
     similarities.sort(key=lambda x: x[1], reverse=True)
     closest_labels = list(set([label for label, _ in similarities[:top_n]]))
+    #print('2')
+    return closest_labels
+'''
+
+def find_closest_clusters(target_vector, cluster_results, top_n=3):
+    similarities = []
+    for label, info in cluster_results.items():
+        center_vector = np.array(info['center'])
+        sim = cosine_similarity([target_vector], [center_vector])[0][0]
+        similarities.append((label, sim))
     
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    closest_labels = [label for label, _ in similarities[:top_n]]
     return closest_labels
 
+'''
 def calculate_similarities(target_vector, cluster_results, closest_labels):
     similarity_scores = {}
     
     for label in closest_labels:
         for phrase_info in cluster_results[label]:
+            original_phrase, vector = phrase_info
+            key = original_phrase.split('*****')[0]  # 提取key
+            
+            sim = cosine_similarity([target_vector], [vector])[0][0]
+            
+            if key not in similarity_scores:
+                similarity_scores[key] = 0
+            similarity_scores[key] += sim
+    
+    return similarity_scores
+'''
+def calculate_similarities(target_vector, cluster_results, closest_labels):
+    similarity_scores = {}
+    
+    for label in closest_labels:
+        for phrase_info in cluster_results[label]['points']:
             original_phrase, vector = phrase_info
             key = original_phrase.split('*****')[0]  # 提取key
             
@@ -312,11 +342,6 @@ def log_svo_extract_nostril(log):
                     return ssss, ssss, ssss, ssss
             
             #if(s["evt.args"].find("-n.s/^cpu\\s//p./proc/stat.") != -1):
-        subject1 = subject1.replace('\n', '')
-        subject1 = subject1.replace('\\', '++')
-        subject1 = subject1.replace('\\', '++')
-        subject1 = subject1.replace('$', '_')
-        subject1 = subject1.replace('\"', '')
         subject1 = subject1.replace('sh ', 'shell ')
         subject1 = subject1.replace('bash ', 'bash shell ')
         subject1 = subject1.replace('cp ', 'copy ')
@@ -356,11 +381,6 @@ def log_svo_extract_nostril(log):
         verb1 = verb1.replace('rmdir', 'rmdir remove directory')
         verb1 = verb1.replace('chmod ', 'chmod modify file permission ')
 
-        object1 = object1.replace('\n', '')
-        object1 = object1.replace('\\', '++')
-        object1 = object1.replace('\\', '++')
-        object1 = object1.replace('$', '_')
-        object1 = object1.replace('\"', '')
         object1 = object1.replace('sh ', 'shell ')
         object1 = object1.replace('bash ', 'bash shell ')
         object1 = object1.replace('cp ', 'copy ')
@@ -389,11 +409,6 @@ def log_svo_extract_nostril(log):
         object1 = object1.replace('tar ', 'tar compress ')
         object1 = object1.replace('zip ', 'zip compress ')
 
-        cmdline1 = cmdline1.replace('\n', '')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('$', '_')
-        cmdline1 = cmdline1.replace('\"', '')
         cmdline1 = cmdline1.replace('sh ', 'shell ')
         cmdline1 = cmdline1.replace('bash ', 'bash shell ')
         cmdline1 = cmdline1.replace('cp ', 'copy ')
@@ -465,6 +480,7 @@ def sanitize_string(s):
                           
     #split_path = [item for item in filter(lambda x:x != '',newline)]
     #return split_path
+    sss = ''
     for item in filter(lambda x:x != '',newline):
         sss += str(item) + ' '
     return sss[:-1]
