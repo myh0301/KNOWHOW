@@ -85,19 +85,20 @@ if __name__ == "__main__":
     X = np.array(all_vectors)
 
     if mean_shift_bool == True:
-        # 应用Mean Shift聚类
+    # 应用Mean Shift聚类
         bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=1000)
         ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
         ms.fit(X)
         labels_ms = ms.labels_
+        cluster_centers = ms.cluster_centers_
 
         # 创建聚类结果字典
         cluster_results = {}
         for i, label in enumerate(labels_ms):
-            label = int(label) 
+            label = int(label)
             if label not in cluster_results:
-                cluster_results[label] = []
-            cluster_results[label].append((labels[i], X[i].tolist()))
+                cluster_results[label] = {'points': [], 'center': cluster_centers[label].tolist()}
+            cluster_results[label]['points'].append((labels[i], X[i].tolist()))
 
         # 将结果保存到本地文件
         with open('./meanshift_clustered_phrases.json', 'w') as f:
@@ -108,13 +109,24 @@ if __name__ == "__main__":
         dbscan.fit(X)
         labels_dbscan = dbscan.labels_
 
+        # 计算每个聚类的中心向量
+        unique_labels = set(labels_dbscan)
+        cluster_centers = {}
+        for label in unique_labels:
+            if label != -1:  # 忽略噪声点（如果有的话）
+                class_members = [X[i] for i in range(len(labels_dbscan)) if labels_dbscan[i] == label]
+                center = np.mean(class_members, axis=0)
+                cluster_centers[label] = center.tolist()
+
         # 创建聚类结果字典
         cluster_results = {}
         for i, label in enumerate(labels_dbscan):
+            if label == -1:
+                continue  # 忽略噪声点
             label = int(label)
             if label not in cluster_results:
-                cluster_results[label] = []
-            cluster_results[label].append((labels[i], X[i].tolist()))
+                cluster_results[label] = {'points': [], 'center': cluster_centers[label]}
+            cluster_results[label]['points'].append((labels[i], X[i].tolist()))
 
         # 将结果保存到本地文件
         with open('clustered_phrases_dbscan.json', 'w') as f:
