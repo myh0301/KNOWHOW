@@ -450,6 +450,7 @@ def sanitize_string(s):
                 print(s)
     #split_path = [item for item in filter(lambda x:x != '',newline)]
     #return split_path
+    sss = ''
     for item in filter(lambda x:x != '',newline):
         sss += str(item) + ' '
     return sss[:-1]
