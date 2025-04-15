@@ -55,7 +55,7 @@ def find_closest_clusters(target_vector, cluster_results, top_n=3):
     return closest_labels
 '''
 
-def find_closest_clusters(target_vector, cluster_results, top_n=3):
+def find_closest_clusters(target_vector, cluster_results, top_n=5):
     similarities = []
     for label, info in cluster_results.items():
         center_vector = np.array(info['center'])
@@ -497,42 +497,42 @@ def process_log(s, nostril=False, top_keys=5):
         s['tech_score'] = '0'
         s["anomaly_socre"] = '0'
         return s
-    sub_emb = encode_string(model, sub)
-    verb_emb = encode_string(model, verb)
-    obj_emb = encode_string(model, obj)
-    cmd_emb = encode_string(model, cmd)
+    total_similarity_scores = {}
+    if sub != "":
+        sub_emb = encode_string(model, sub)
+        sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, top_n=5)
+        sub_similarity_scores = calculate_similarities(sub_emb, cluster_results, sub_closest_labels)
+        for key, score in sub_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
+    if verb != "":
+        verb_emb = encode_string(model, verb)
+        verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, top_n=5)
+        verb_similarity_scores = calculate_similarities(verb_emb, cluster_results, verb_closest_labels)
+        for key, score in verb_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
+    if obj != "":
+        obj_emb = encode_string(model, obj)
+        obj_closest_labels = find_closest_clusters(obj_emb, cluster_results, top_n=5)
+        obj_similarity_scores = calculate_similarities(obj_emb, cluster_results, obj_closest_labels)
+        for key, score in obj_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
+    if cmd != "":
+        cmd_emb = encode_string(model, cmd)
+        cmd_closest_labels = find_closest_clusters(cmd_emb, cluster_results, top_n=5)
+        cmd_similarity_scores = calculate_similarities(cmd_emb, cluster_results, cmd_closest_labels)
+        for key, score in cmd_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
 
     #print('22222')
-    sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, top_n=3)
-    sub_similarity_scores = calculate_similarities(sub_emb, cluster_results, sub_closest_labels)
-    verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, top_n=3)
-    verb_similarity_scores = calculate_similarities(verb_emb, cluster_results, verb_closest_labels)
-    obj_closest_labels = find_closest_clusters(obj_emb, cluster_results, top_n=3)
-    obj_similarity_scores = calculate_similarities(obj_emb, cluster_results, obj_closest_labels)
-    cmd_closest_labels = find_closest_clusters(cmd_emb, cluster_results, top_n=3)
-    cmd_similarity_scores = calculate_similarities(cmd_emb, cluster_results, cmd_closest_labels)
-
-    total_similarity_scores = {}
-    #print('33333')
-    for key, score in sub_similarity_scores.items():
-        if key not in total_similarity_scores:
-            total_similarity_scores[key] = 0
-        total_similarity_scores[key] += score
-        
-    for key, score in verb_similarity_scores.items():
-        if key not in total_similarity_scores:
-            total_similarity_scores[key] = 0
-        total_similarity_scores[key] += score
-
-    for key, score in obj_similarity_scores.items():
-        if key not in total_similarity_scores:
-            total_similarity_scores[key] = 0
-        total_similarity_scores[key] += score
-
-    for key, score in cmd_similarity_scores.items():
-        if key not in total_similarity_scores:
-            total_similarity_scores[key] = 0
-        total_similarity_scores[key] += score
+     
     sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:min(top_keys, len(total_similarity_scores.keys()))]
     ll, ss = '', ''
 
