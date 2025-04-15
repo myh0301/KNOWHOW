@@ -123,372 +123,352 @@ def log_svo_extract(log):
     object1 = log['fd.name']
     verb1 = log['evt.type']
     cmdline1 = log['proc.cmdline'] + ' ' + log['proc.pcmdline']
+    ssss = "None111"
+    if subject1.find("->") != -1:
+        ss = subject1.split(' ')[0]
+        ss = ss.split('->')
+        if len(ss) >= 2:
+            ip1 = str(ss[0])
+            ip2 = str(ss[1])
+            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                ip1 = "internal network address"
+            else :
+                ip1 = "external network address"
+            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                ip2 = "to internal network address"
+            else :
+                ip2 = "to external network address"
+            subject1 = ip1 + ' ' + ip2
+    elif(subject1.find(".so") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/proc/filesystems") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/proc/stat") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/usr/lib/locale") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/usr/lib/x86_64-linux-gnu") != -1):
+        return ssss, ssss, ssss, ssss
+    else:
+        subject1 = subject1.replace('sh ', 'shell ')
+        subject1 = subject1.replace('bash ', 'bash shell ')
+        subject1 = subject1.replace('cp ', 'copy ')
+        subject1 = subject1.replace('scp ', 'scp transfer ')
+        subject1 = subject1.replace('ssh ', 'ssh transfer ')
+        subject1 = subject1.replace('sftp ', 'sftp transfer ')
+        subject1 = subject1.replace('tftp ', 'tftp transfer ')
+        subject1 = subject1.replace('curl ', 'curl transfer ')
+        subject1 = subject1.replace('sshd ', 'sshd transfer ')
+        subject1 = subject1.replace('certutil ', 'certutil transfer ')
+        subject1 = subject1.replace('wget ', 'wget download ')
+        subject1 = subject1.replace('cat ', 'cat read ')
+        subject1 = subject1.replace('reg ', 'reg registry')
+        subject1 = subject1.replace('pkill ', 'pkill stop process ')
+        subject1 = subject1.replace('kill ', 'kill stop process ')
+        subject1 = subject1.replace('ls ', 'ls list ')
+        subject1 = subject1.replace('dir ', 'dir list ')
+        subject1 = subject1.replace('mv ', 'mv move ')
+        subject1 = subject1.replace('del ', 'del delete ')
+        subject1 = subject1.replace('schtask ', 'schtask schdule task ')
+        subject1 = subject1.replace('grep ', 'grep search ')
+        subject1 = subject1.replace('find ', 'find search ')
+        subject1 = subject1.replace('chmod ', 'chmod modify file permission ')
+        subject1 = subject1.replace('chown ', 'chown modify file permission ')
+        subject1 = subject1.replace('execve ', 'execve execute')
+        subject1 = subject1.replace('recvmsg ', 'recvmsg receive message ')
+        subject1 = subject1.replace('recvfrom ', 'recvfrom receive message ')
+        subject1 = subject1.replace('sendmsg ', 'sendmsg send message ')
+        subject1 = subject1.replace('tar ', 'tar compress ')
+        subject1 = subject1.replace('zip ', 'zip compress ')
+    
+    if object1.find("->") != -1:
+        ss = subject1.split(' ')[0]
+        ss = ss.split('->')
+        if len(ss) >= 2:
+            ip1 = str(ss[0])
+            ip2 = str(ss[1])
+            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                ip1 = "internal network address"
+            else :
+                ip1 = "external network address"
+            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                ip2 = "to internal network address"
+            else :
+                ip2 = "to external network address"
+            object1 = ip1 + ' ' + ip2
+    elif(object1.find(".so") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/proc/filesystems") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/proc/stat") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/usr/lib/locale") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/usr/lib/x86_64-linux-gnu") != -1):
+        return ssss, ssss, ssss, ssss
+    '''   
+    else:
+        object1 = object1.replace('\n', '')
+        object1 = object1.replace('\\', '++')
+        object1 = object1.replace('\\', '++')
+        object1 = object1.replace('$', '_')
+        object1 = object1.replace('\"', '')
+        object1 = object1.replace('sh ', 'shell ')
+        object1 = object1.replace('bash ', 'bash shell ')
+        object1 = object1.replace('cp ', 'copy ')
+        object1 = object1.replace('scp ', 'scp transfer ')
+        object1 = object1.replace('ssh ', 'ssh transfer ')
+        object1 = object1.replace('sftp ', 'sftp transfer ')
+        object1 = object1.replace('tftp ', 'tftp transfer ')
+        object1 = object1.replace('curl ', 'curl transfer ')
+        object1 = object1.replace('sshd ', 'sshd transfer ')
+        object1 = object1.replace('certutil ', 'certutil transfer ')
+        object1 = object1.replace('wget ', 'wget download ')
+        object1 = object1.replace('cat ', 'cat read ')
+        object1 = object1.replace('reg ', 'reg registry')
+        object1 = object1.replace('pkill ', 'pkill stop process ')
+        object1 = object1.replace('kill ', 'kill stop process ')
+        object1 = object1.replace('ls ', 'ls list ')
+        object1 = object1.replace('dir ', 'dir list ')
+        object1 = object1.replace('mv ', 'mv move ')
+        object1 = object1.replace('rm ', 'rm delete ')
+        object1 = object1.replace('del ', 'del delete ')
+        object1 = object1.replace('schtask ', 'schtask schdule task ')
+        object1 = object1.replace('grep ', 'grep search ')
+        object1 = object1.replace('find ', 'find search ')
+        object1 = object1.replace('chmod ', 'chmod modify file permission ')
+        object1 = object1.replace('chown ', 'chown modify file permission ')
+        object1 = object1.replace('tar ', 'tar compress ')
+        object1 = object1.replace('zip ', 'zip compress ')
+    '''
+    verb1 = verb1.replace('execve', 'execute')
+    verb1 = verb1.replace('recvmsg', 'recvmsg receive message')
+    verb1 = verb1.replace('recvfrom', 'recvfrom receive message')
+    verb1 = verb1.replace('sendmsg', 'sendmsg send message')
+    verb1 = verb1.replace('sendto', 'sendto send message')
+    verb1 = verb1.replace('rmdir', 'rmdir remove directory')
+    verb1 = verb1.replace('chmod ', 'chmod modify file permission ')   
+    '''
+    cmdline1 = cmdline1.replace('\n', '')
+    cmdline1 = cmdline1.replace('\\', '++')
+    cmdline1 = cmdline1.replace('\\', '++')
+    cmdline1 = cmdline1.replace('$', '_')
+    cmdline1 = cmdline1.replace('\"', '')
+    cmdline1 = cmdline1.replace('sh ', 'shell ')
+    cmdline1 = cmdline1.replace('bash ', 'bash shell ')
+    cmdline1 = cmdline1.replace('cp ', 'copy ')
+    cmdline1 = cmdline1.replace('scp ', 'scp transfer ')
+    cmdline1 = cmdline1.replace('ssh ', 'ssh transfer ')
+    cmdline1 = cmdline1.replace('sftp ', 'sftp transfer ')
+    cmdline1 = cmdline1.replace('tftp ', 'tftp transfer ')
+    cmdline1 = cmdline1.replace('curl ', 'curl transfer ')
+    cmdline1 = cmdline1.replace('sshd ', 'sshd transfer ')
+    cmdline1 = cmdline1.replace('certutil ', 'certutil transfer ')
+    cmdline1 = cmdline1.replace('wget ', 'wget download ')
+    cmdline1 = cmdline1.replace('cat ', 'cat read ')
+    cmdline1 = cmdline1.replace('reg ', 'reg registry')
+    cmdline1 = cmdline1.replace('pkill ', 'pkill stop process ')
+    cmdline1 = cmdline1.replace('kill ', 'kill stop process ')
+    cmdline1 = cmdline1.replace('ls ', 'ls list ')
+    cmdline1 = cmdline1.replace('dir ', 'dir list ')
+    cmdline1 = cmdline1.replace('mv ', 'mv move ')
+    cmdline1 = cmdline1.replace('rm ', 'rm delete ')
+    cmdline1 = cmdline1.replace('del ', 'del delete ')
+    cmdline1 = cmdline1.replace('schtask ', 'schtask schdule task ')
+    cmdline1 = cmdline1.replace('grep ', 'grep search ')
+    cmdline1 = cmdline1.replace('find ', 'find search ')
+    cmdline1 = cmdline1.replace('chmod ', 'chmod modify file permission ')
+    cmdline1 = cmdline1.replace('chown ', 'chown modify file permission ')
+    cmdline1 = cmdline1.replace('execve ', 'execute ')
+    cmdline1 = cmdline1.replace('recvmsg ', 'recvmsg receive message ')
+    cmdline1 = cmdline1.replace('recvfrom ', 'recvfrom receive message ')
+    cmdline1 = cmdline1.replace('sendmsg ', 'sendmsg send message ')
+    cmdline1 = cmdline1.replace('sendto ', 'sendto send message ')
+    cmdline1 = cmdline1.replace('tar ', 'tar compress ')
+    cmdline1 = cmdline1.replace('zip ', 'zip compress ')
+    '''
+    subject1 = re.sub(r'[^A-Za-z0-9 ]+', ' ', subject1) 
+    verb1 = re.sub(r'[^A-Za-z0-9 ]+', ' ', verb1) 
+    object1 = re.sub(r'[^A-Za-z0-9 ]+', ' ', object1) 
+    cmdline1 = re.sub(r'[^A-Za-z0-9 ]+', ' ', cmdline1) 
+    return subject1, verb1, object1, cmdline1
 
-    if True:
-        ssss = "None111"
-        if(subject1 != ""):
-            if(subject1.find(".so") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/proc/filesystems") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/proc/stat") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/usr/lib/locale") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/usr/lib/x86_64-linux-gnu") != -1):
-                return ssss, ssss, ssss, ssss
-
-            elif subject1.find("->") != -1:
-                ss = subject1.split(' ')[0]
-                ss = ss.split('->')
-                if len(ss) >= 2:
-                    ip1 = str(ss[0])
-                    ip2 = str(ss[1])
-                    if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                        ip1 = "internal network address"
-                    else :
-                        ip1 = "external network address"
-                    if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                        ip2 = "to internal network address"
-                    else :
-                        ip2 = "to external network address"
-                    subject1 = ip1 + ' ' + ip2
-            else:
-                subject1 = subject1.replace('\n', '')
-                subject1 = subject1.replace('\\', '++')
-                subject1 = subject1.replace('\\', '++')
-                subject1 = subject1.replace('$', '_')
-                subject1 = subject1.replace('\"', '')
-                subject1 = subject1.replace('sh ', 'shell ')
-                subject1 = subject1.replace('bash ', 'bash shell ')
-                subject1 = subject1.replace('cp ', 'copy ')
-                subject1 = subject1.replace('scp ', 'scp transfer ')
-                subject1 = subject1.replace('ssh ', 'ssh transfer ')
-                subject1 = subject1.replace('sftp ', 'sftp transfer ')
-                subject1 = subject1.replace('tftp ', 'tftp transfer ')
-                subject1 = subject1.replace('curl ', 'curl transfer ')
-                subject1 = subject1.replace('sshd ', 'sshd transfer ')
-                subject1 = subject1.replace('certutil ', 'certutil transfer ')
-                subject1 = subject1.replace('wget ', 'wget download ')
-                subject1 = subject1.replace('cat ', 'cat read ')
-                subject1 = subject1.replace('reg ', 'reg registry')
-                subject1 = subject1.replace('pkill ', 'pkill stop process ')
-                subject1 = subject1.replace('kill ', 'kill stop process ')
-                subject1 = subject1.replace('ls ', 'ls list ')
-                subject1 = subject1.replace('dir ', 'dir list ')
-                subject1 = subject1.replace('mv ', 'mv move ')
-                subject1 = subject1.replace('del ', 'del delete ')
-                subject1 = subject1.replace('schtask ', 'schtask schdule task ')
-                subject1 = subject1.replace('grep ', 'grep search ')
-                subject1 = subject1.replace('find ', 'find search ')
-                subject1 = subject1.replace('chmod ', 'chmod modify file permission ')
-                subject1 = subject1.replace('chown ', 'chown modify file permission ')
-                subject1 = subject1.replace('execve ', 'execve execute')
-                subject1 = subject1.replace('recvmsg ', 'recvmsg receive message ')
-                subject1 = subject1.replace('recvfrom ', 'recvfrom receive message ')
-                subject1 = subject1.replace('sendmsg ', 'sendmsg send message ')
-                subject1 = subject1.replace('tar ', 'tar compress ')
-                subject1 = subject1.replace('zip ', 'zip compress ')
-        else:
-            return ssss, ssss, ssss, ssss
-        
-        if(object1 != None):
-            if(object1.find(".so") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/proc/filesystems") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/proc/stat") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/usr/lib/locale") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/usr/lib/x86_64-linux-gnu") != -1):
-                return ssss, ssss, ssss, ssss
-            elif object1.find("->") != -1:
-                ss = subject1.split(' ')[0]
-                ss = ss.split('->')
-                if len(ss) >= 2:
-                    ip1 = str(ss[0])
-                    ip2 = str(ss[1])
-                    if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                        ip1 = "internal network address"
-                    else :
-                        ip1 = "external network address"
-                    if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                        ip2 = "to internal network address"
-                    else :
-                        ip2 = "to external network address"
-                    object1 = ip1 + ' ' + ip2
-            else:          
-                object1 = object1.replace('\n', '')
-                object1 = object1.replace('\\', '++')
-                object1 = object1.replace('\\', '++')
-                object1 = object1.replace('$', '_')
-                object1 = object1.replace('\"', '')
-                object1 = object1.replace('sh ', 'shell ')
-                object1 = object1.replace('bash ', 'bash shell ')
-                object1 = object1.replace('cp ', 'copy ')
-                object1 = object1.replace('scp ', 'scp transfer ')
-                object1 = object1.replace('ssh ', 'ssh transfer ')
-                object1 = object1.replace('sftp ', 'sftp transfer ')
-                object1 = object1.replace('tftp ', 'tftp transfer ')
-                object1 = object1.replace('curl ', 'curl transfer ')
-                object1 = object1.replace('sshd ', 'sshd transfer ')
-                object1 = object1.replace('certutil ', 'certutil transfer ')
-                object1 = object1.replace('wget ', 'wget download ')
-                object1 = object1.replace('cat ', 'cat read ')
-                object1 = object1.replace('reg ', 'reg registry')
-                object1 = object1.replace('pkill ', 'pkill stop process ')
-                object1 = object1.replace('kill ', 'kill stop process ')
-                object1 = object1.replace('ls ', 'ls list ')
-                object1 = object1.replace('dir ', 'dir list ')
-                object1 = object1.replace('mv ', 'mv move ')
-                object1 = object1.replace('rm ', 'rm delete ')
-                object1 = object1.replace('del ', 'del delete ')
-                object1 = object1.replace('schtask ', 'schtask schdule task ')
-                object1 = object1.replace('grep ', 'grep search ')
-                object1 = object1.replace('find ', 'find search ')
-                object1 = object1.replace('chmod ', 'chmod modify file permission ')
-                object1 = object1.replace('chown ', 'chown modify file permission ')
-                object1 = object1.replace('tar ', 'tar compress ')
-                object1 = object1.replace('zip ', 'zip compress ')
-        else:
-            return ssss, ssss, ssss, ssss
-            
-        verb1 = verb1.replace('execve', 'execute')
-        verb1 = verb1.replace('recvmsg', 'recvmsg receive message')
-        verb1 = verb1.replace('recvfrom', 'recvfrom receive message')
-        verb1 = verb1.replace('sendmsg', 'sendmsg send message')
-        verb1 = verb1.replace('sendto', 'sendto send message')
-        verb1 = verb1.replace('rmdir', 'rmdir remove directory')
-        verb1 = verb1.replace('chmod ', 'chmod modify file permission ')
-
-        
-        '''
-        cmdline1 = cmdline1.replace('\n', '')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('$', '_')
-        cmdline1 = cmdline1.replace('\"', '')
-        cmdline1 = cmdline1.replace('sh ', 'shell ')
-        cmdline1 = cmdline1.replace('bash ', 'bash shell ')
-        cmdline1 = cmdline1.replace('cp ', 'copy ')
-        cmdline1 = cmdline1.replace('scp ', 'scp transfer ')
-        cmdline1 = cmdline1.replace('ssh ', 'ssh transfer ')
-        cmdline1 = cmdline1.replace('sftp ', 'sftp transfer ')
-        cmdline1 = cmdline1.replace('tftp ', 'tftp transfer ')
-        cmdline1 = cmdline1.replace('curl ', 'curl transfer ')
-        cmdline1 = cmdline1.replace('sshd ', 'sshd transfer ')
-        cmdline1 = cmdline1.replace('certutil ', 'certutil transfer ')
-        cmdline1 = cmdline1.replace('wget ', 'wget download ')
-        cmdline1 = cmdline1.replace('cat ', 'cat read ')
-        cmdline1 = cmdline1.replace('reg ', 'reg registry')
-        cmdline1 = cmdline1.replace('pkill ', 'pkill stop process ')
-        cmdline1 = cmdline1.replace('kill ', 'kill stop process ')
-        cmdline1 = cmdline1.replace('ls ', 'ls list ')
-        cmdline1 = cmdline1.replace('dir ', 'dir list ')
-        cmdline1 = cmdline1.replace('mv ', 'mv move ')
-        cmdline1 = cmdline1.replace('rm ', 'rm delete ')
-        cmdline1 = cmdline1.replace('del ', 'del delete ')
-        cmdline1 = cmdline1.replace('schtask ', 'schtask schdule task ')
-        cmdline1 = cmdline1.replace('grep ', 'grep search ')
-        cmdline1 = cmdline1.replace('find ', 'find search ')
-        cmdline1 = cmdline1.replace('chmod ', 'chmod modify file permission ')
-        cmdline1 = cmdline1.replace('chown ', 'chown modify file permission ')
-        cmdline1 = cmdline1.replace('execve ', 'execute ')
-        cmdline1 = cmdline1.replace('recvmsg ', 'recvmsg receive message ')
-        cmdline1 = cmdline1.replace('recvfrom ', 'recvfrom receive message ')
-        cmdline1 = cmdline1.replace('sendmsg ', 'sendmsg send message ')
-        cmdline1 = cmdline1.replace('sendto ', 'sendto send message ')
-        cmdline1 = cmdline1.replace('tar ', 'tar compress ')
-        cmdline1 = cmdline1.replace('zip ', 'zip compress ')
-        '''
-        return subject1, verb1, object1, cmdline1
 
 def log_svo_extract_nostril(log):
-    subject1 = sanitize_string(log['proc.name'])
-    object1 = sanitize_string(log['fd.name'])
-    verb1 = sanitize_string(log['evt.type'])
-    cmdline1 = sanitize_string(log['proc.cmdline'] + ' ' + log['proc.pcmdline'])
+    subject1 = log['proc.name']
+    object1 = log['fd.name']
+    verb1 = log['evt.type']
+    cmdline1 = log['proc.cmdline'] + ' ' + log['proc.pcmdline']
+    ssss = "None111"
+    if subject1.find("->") != -1:
+        ss = subject1.split(' ')[0]
+        ss = ss.split('->')
+        if len(ss) >= 2:
+            ip1 = str(ss[0])
+            ip2 = str(ss[1])
+            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                ip1 = "internal network address"
+            else :
+                ip1 = "external network address"
+            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                ip2 = "to internal network address"
+            else :
+                ip2 = "to external network address"
+            subject1 = ip1 + ' ' + ip2
+    elif(subject1.find(".so") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/proc/filesystems") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/proc/stat") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/usr/lib/locale") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(subject1.find("/usr/lib/x86_64-linux-gnu") != -1):
+        return ssss, ssss, ssss, ssss
+    else:
+        subject1 = subject1.replace('sh ', 'shell ')
+        subject1 = subject1.replace('bash ', 'bash shell ')
+        subject1 = subject1.replace('cp ', 'copy ')
+        subject1 = subject1.replace('scp ', 'scp transfer ')
+        subject1 = subject1.replace('ssh ', 'ssh transfer ')
+        subject1 = subject1.replace('sftp ', 'sftp transfer ')
+        subject1 = subject1.replace('tftp ', 'tftp transfer ')
+        subject1 = subject1.replace('curl ', 'curl transfer ')
+        subject1 = subject1.replace('sshd ', 'sshd transfer ')
+        subject1 = subject1.replace('certutil ', 'certutil transfer ')
+        subject1 = subject1.replace('wget ', 'wget download ')
+        subject1 = subject1.replace('cat ', 'cat read ')
+        subject1 = subject1.replace('reg ', 'reg registry')
+        subject1 = subject1.replace('pkill ', 'pkill stop process ')
+        subject1 = subject1.replace('kill ', 'kill stop process ')
+        subject1 = subject1.replace('ls ', 'ls list ')
+        subject1 = subject1.replace('dir ', 'dir list ')
+        subject1 = subject1.replace('mv ', 'mv move ')
+        subject1 = subject1.replace('del ', 'del delete ')
+        subject1 = subject1.replace('schtask ', 'schtask schdule task ')
+        subject1 = subject1.replace('grep ', 'grep search ')
+        subject1 = subject1.replace('find ', 'find search ')
+        subject1 = subject1.replace('chmod ', 'chmod modify file permission ')
+        subject1 = subject1.replace('chown ', 'chown modify file permission ')
+        subject1 = subject1.replace('execve ', 'execve execute')
+        subject1 = subject1.replace('recvmsg ', 'recvmsg receive message ')
+        subject1 = subject1.replace('recvfrom ', 'recvfrom receive message ')
+        subject1 = subject1.replace('sendmsg ', 'sendmsg send message ')
+        subject1 = subject1.replace('tar ', 'tar compress ')
+        subject1 = subject1.replace('zip ', 'zip compress ')
+    
+    if object1.find("->") != -1:
+        ss = subject1.split(' ')[0]
+        ss = ss.split('->')
+        if len(ss) >= 2:
+            ip1 = str(ss[0])
+            ip2 = str(ss[1])
+            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                ip1 = "internal network address"
+            else :
+                ip1 = "external network address"
+            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                ip2 = "to internal network address"
+            else :
+                ip2 = "to external network address"
+            object1 = ip1 + ' ' + ip2
+    elif(object1.find(".so") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/proc/filesystems") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/proc/stat") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/usr/lib/locale") != -1):
+        return ssss, ssss, ssss, ssss
+    elif(object1.find("/usr/lib/x86_64-linux-gnu") != -1):
+        return ssss, ssss, ssss, ssss
+    '''   
+    else:
+        object1 = object1.replace('\n', '')
+        object1 = object1.replace('\\', '++')
+        object1 = object1.replace('\\', '++')
+        object1 = object1.replace('$', '_')
+        object1 = object1.replace('\"', '')
+        object1 = object1.replace('sh ', 'shell ')
+        object1 = object1.replace('bash ', 'bash shell ')
+        object1 = object1.replace('cp ', 'copy ')
+        object1 = object1.replace('scp ', 'scp transfer ')
+        object1 = object1.replace('ssh ', 'ssh transfer ')
+        object1 = object1.replace('sftp ', 'sftp transfer ')
+        object1 = object1.replace('tftp ', 'tftp transfer ')
+        object1 = object1.replace('curl ', 'curl transfer ')
+        object1 = object1.replace('sshd ', 'sshd transfer ')
+        object1 = object1.replace('certutil ', 'certutil transfer ')
+        object1 = object1.replace('wget ', 'wget download ')
+        object1 = object1.replace('cat ', 'cat read ')
+        object1 = object1.replace('reg ', 'reg registry')
+        object1 = object1.replace('pkill ', 'pkill stop process ')
+        object1 = object1.replace('kill ', 'kill stop process ')
+        object1 = object1.replace('ls ', 'ls list ')
+        object1 = object1.replace('dir ', 'dir list ')
+        object1 = object1.replace('mv ', 'mv move ')
+        object1 = object1.replace('rm ', 'rm delete ')
+        object1 = object1.replace('del ', 'del delete ')
+        object1 = object1.replace('schtask ', 'schtask schdule task ')
+        object1 = object1.replace('grep ', 'grep search ')
+        object1 = object1.replace('find ', 'find search ')
+        object1 = object1.replace('chmod ', 'chmod modify file permission ')
+        object1 = object1.replace('chown ', 'chown modify file permission ')
+        object1 = object1.replace('tar ', 'tar compress ')
+        object1 = object1.replace('zip ', 'zip compress ')
+    '''
+    verb1 = verb1.replace('execve', 'execute')
+    verb1 = verb1.replace('recvmsg', 'recvmsg receive message')
+    verb1 = verb1.replace('recvfrom', 'recvfrom receive message')
+    verb1 = verb1.replace('sendmsg', 'sendmsg send message')
+    verb1 = verb1.replace('sendto', 'sendto send message')
+    verb1 = verb1.replace('rmdir', 'rmdir remove directory')
+    verb1 = verb1.replace('chmod ', 'chmod modify file permission ')
+    subject1 = sanitize_string(subject1)
+    object1 = sanitize_string(object1)
 
-    if True:
-        ssss = "None111"
-        if(subject1 != ""):
-            if(subject1.find(".so") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/proc/filesystems") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/proc/stat") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/usr/lib/locale") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(subject1.find("/usr/lib/x86_64-linux-gnu") != -1):
-                return ssss, ssss, ssss, ssss
+    cmdline1 = sanitize_string(cmdline1)      
+    '''
+    cmdline1 = cmdline1.replace('\n', '')
+    cmdline1 = cmdline1.replace('\\', '++')
+    cmdline1 = cmdline1.replace('\\', '++')
+    cmdline1 = cmdline1.replace('$', '_')
+    cmdline1 = cmdline1.replace('\"', '')
+    cmdline1 = cmdline1.replace('sh ', 'shell ')
+    cmdline1 = cmdline1.replace('bash ', 'bash shell ')
+    cmdline1 = cmdline1.replace('cp ', 'copy ')
+    cmdline1 = cmdline1.replace('scp ', 'scp transfer ')
+    cmdline1 = cmdline1.replace('ssh ', 'ssh transfer ')
+    cmdline1 = cmdline1.replace('sftp ', 'sftp transfer ')
+    cmdline1 = cmdline1.replace('tftp ', 'tftp transfer ')
+    cmdline1 = cmdline1.replace('curl ', 'curl transfer ')
+    cmdline1 = cmdline1.replace('sshd ', 'sshd transfer ')
+    cmdline1 = cmdline1.replace('certutil ', 'certutil transfer ')
+    cmdline1 = cmdline1.replace('wget ', 'wget download ')
+    cmdline1 = cmdline1.replace('cat ', 'cat read ')
+    cmdline1 = cmdline1.replace('reg ', 'reg registry')
+    cmdline1 = cmdline1.replace('pkill ', 'pkill stop process ')
+    cmdline1 = cmdline1.replace('kill ', 'kill stop process ')
+    cmdline1 = cmdline1.replace('ls ', 'ls list ')
+    cmdline1 = cmdline1.replace('dir ', 'dir list ')
+    cmdline1 = cmdline1.replace('mv ', 'mv move ')
+    cmdline1 = cmdline1.replace('rm ', 'rm delete ')
+    cmdline1 = cmdline1.replace('del ', 'del delete ')
+    cmdline1 = cmdline1.replace('schtask ', 'schtask schdule task ')
+    cmdline1 = cmdline1.replace('grep ', 'grep search ')
+    cmdline1 = cmdline1.replace('find ', 'find search ')
+    cmdline1 = cmdline1.replace('chmod ', 'chmod modify file permission ')
+    cmdline1 = cmdline1.replace('chown ', 'chown modify file permission ')
+    cmdline1 = cmdline1.replace('execve ', 'execute ')
+    cmdline1 = cmdline1.replace('recvmsg ', 'recvmsg receive message ')
+    cmdline1 = cmdline1.replace('recvfrom ', 'recvfrom receive message ')
+    cmdline1 = cmdline1.replace('sendmsg ', 'sendmsg send message ')
+    cmdline1 = cmdline1.replace('sendto ', 'sendto send message ')
+    cmdline1 = cmdline1.replace('tar ', 'tar compress ')
+    cmdline1 = cmdline1.replace('zip ', 'zip compress ')
+    '''
+    return subject1, verb1, object1, cmdline1
 
-            elif subject1.find("->") != -1:
-                ss = subject1.split(' ')[0]
-                ss = ss.split('->')
-                if len(ss) >= 2:
-                    ip1 = str(ss[0])
-                    ip2 = str(ss[1])
-                    if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                        ip1 = "internal network address"
-                    else :
-                        ip1 = "external network address"
-                    if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                        ip2 = "to internal network address"
-                    else :
-                        ip2 = "to external network address"
-                    subject1 = ip1 + ' ' + ip2
-            else:
-                subject1 = subject1.replace('\n', '')
-                subject1 = subject1.replace('\\', '++')
-                subject1 = subject1.replace('\\', '++')
-                subject1 = subject1.replace('$', '_')
-                subject1 = subject1.replace('\"', '')
-                subject1 = subject1.replace('sh ', 'shell ')
-                subject1 = subject1.replace('bash ', 'bash shell ')
-                subject1 = subject1.replace('cp ', 'copy ')
-                subject1 = subject1.replace('scp ', 'scp transfer ')
-                subject1 = subject1.replace('ssh ', 'ssh transfer ')
-                subject1 = subject1.replace('sftp ', 'sftp transfer ')
-                subject1 = subject1.replace('tftp ', 'tftp transfer ')
-                subject1 = subject1.replace('curl ', 'curl transfer ')
-                subject1 = subject1.replace('sshd ', 'sshd transfer ')
-                subject1 = subject1.replace('certutil ', 'certutil transfer ')
-                subject1 = subject1.replace('wget ', 'wget download ')
-                subject1 = subject1.replace('cat ', 'cat read ')
-                subject1 = subject1.replace('reg ', 'reg registry')
-                subject1 = subject1.replace('pkill ', 'pkill stop process ')
-                subject1 = subject1.replace('kill ', 'kill stop process ')
-                subject1 = subject1.replace('ls ', 'ls list ')
-                subject1 = subject1.replace('dir ', 'dir list ')
-                subject1 = subject1.replace('mv ', 'mv move ')
-                subject1 = subject1.replace('del ', 'del delete ')
-                subject1 = subject1.replace('schtask ', 'schtask schdule task ')
-                subject1 = subject1.replace('grep ', 'grep search ')
-                subject1 = subject1.replace('find ', 'find search ')
-                subject1 = subject1.replace('chmod ', 'chmod modify file permission ')
-                subject1 = subject1.replace('chown ', 'chown modify file permission ')
-                subject1 = subject1.replace('execve ', 'execve execute')
-                subject1 = subject1.replace('recvmsg ', 'recvmsg receive message ')
-                subject1 = subject1.replace('recvfrom ', 'recvfrom receive message ')
-                subject1 = subject1.replace('sendmsg ', 'sendmsg send message ')
-                subject1 = subject1.replace('tar ', 'tar compress ')
-                subject1 = subject1.replace('zip ', 'zip compress ')
-        else:
-            return ssss, ssss, ssss, ssss
-        
-        if(object1 != None):
-            if(object1.find(".so") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/proc/filesystems") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/proc/stat") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/usr/lib/locale") != -1):
-                return ssss, ssss, ssss, ssss
-            elif(object1.find("/usr/lib/x86_64-linux-gnu") != -1):
-                return ssss, ssss, ssss, ssss
-            elif object1.find("->") != -1:
-                ss = subject1.split(' ')[0]
-                ss = ss.split('->')
-                if len(ss) >= 2:
-                    ip1 = str(ss[0])
-                    ip2 = str(ss[1])
-                    if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                        ip1 = "internal network address"
-                    else :
-                        ip1 = "external network address"
-                    if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                        ip2 = "to internal network address"
-                    else :
-                        ip2 = "to external network address"
-                    object1 = ip1 + ' ' + ip2
-            else:          
-                object1 = object1.replace('\n', '')
-                object1 = object1.replace('\\', '++')
-                object1 = object1.replace('\\', '++')
-                object1 = object1.replace('$', '_')
-                object1 = object1.replace('\"', '')
-                object1 = object1.replace('sh ', 'shell ')
-                object1 = object1.replace('bash ', 'bash shell ')
-                object1 = object1.replace('cp ', 'copy ')
-                object1 = object1.replace('scp ', 'scp transfer ')
-                object1 = object1.replace('ssh ', 'ssh transfer ')
-                object1 = object1.replace('sftp ', 'sftp transfer ')
-                object1 = object1.replace('tftp ', 'tftp transfer ')
-                object1 = object1.replace('curl ', 'curl transfer ')
-                object1 = object1.replace('sshd ', 'sshd transfer ')
-                object1 = object1.replace('certutil ', 'certutil transfer ')
-                object1 = object1.replace('wget ', 'wget download ')
-                object1 = object1.replace('cat ', 'cat read ')
-                object1 = object1.replace('reg ', 'reg registry')
-                object1 = object1.replace('pkill ', 'pkill stop process ')
-                object1 = object1.replace('kill ', 'kill stop process ')
-                object1 = object1.replace('ls ', 'ls list ')
-                object1 = object1.replace('dir ', 'dir list ')
-                object1 = object1.replace('mv ', 'mv move ')
-                object1 = object1.replace('rm ', 'rm delete ')
-                object1 = object1.replace('del ', 'del delete ')
-                object1 = object1.replace('schtask ', 'schtask schdule task ')
-                object1 = object1.replace('grep ', 'grep search ')
-                object1 = object1.replace('find ', 'find search ')
-                object1 = object1.replace('chmod ', 'chmod modify file permission ')
-                object1 = object1.replace('chown ', 'chown modify file permission ')
-                object1 = object1.replace('tar ', 'tar compress ')
-                object1 = object1.replace('zip ', 'zip compress ')
-        else:
-            return ssss, ssss, ssss, ssss
-            
-        verb1 = verb1.replace('execve', 'execute')
-        verb1 = verb1.replace('recvmsg', 'recvmsg receive message')
-        verb1 = verb1.replace('recvfrom', 'recvfrom receive message')
-        verb1 = verb1.replace('sendmsg', 'sendmsg send message')
-        verb1 = verb1.replace('sendto', 'sendto send message')
-        verb1 = verb1.replace('rmdir', 'rmdir remove directory')
-        verb1 = verb1.replace('chmod ', 'chmod modify file permission ')
-
-        
-        '''
-        cmdline1 = cmdline1.replace('\n', '')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('$', '_')
-        cmdline1 = cmdline1.replace('\"', '')
-        cmdline1 = cmdline1.replace('sh ', 'shell ')
-        cmdline1 = cmdline1.replace('bash ', 'bash shell ')
-        cmdline1 = cmdline1.replace('cp ', 'copy ')
-        cmdline1 = cmdline1.replace('scp ', 'scp transfer ')
-        cmdline1 = cmdline1.replace('ssh ', 'ssh transfer ')
-        cmdline1 = cmdline1.replace('sftp ', 'sftp transfer ')
-        cmdline1 = cmdline1.replace('tftp ', 'tftp transfer ')
-        cmdline1 = cmdline1.replace('curl ', 'curl transfer ')
-        cmdline1 = cmdline1.replace('sshd ', 'sshd transfer ')
-        cmdline1 = cmdline1.replace('certutil ', 'certutil transfer ')
-        cmdline1 = cmdline1.replace('wget ', 'wget download ')
-        cmdline1 = cmdline1.replace('cat ', 'cat read ')
-        cmdline1 = cmdline1.replace('reg ', 'reg registry')
-        cmdline1 = cmdline1.replace('pkill ', 'pkill stop process ')
-        cmdline1 = cmdline1.replace('kill ', 'kill stop process ')
-        cmdline1 = cmdline1.replace('ls ', 'ls list ')
-        cmdline1 = cmdline1.replace('dir ', 'dir list ')
-        cmdline1 = cmdline1.replace('mv ', 'mv move ')
-        cmdline1 = cmdline1.replace('rm ', 'rm delete ')
-        cmdline1 = cmdline1.replace('del ', 'del delete ')
-        cmdline1 = cmdline1.replace('schtask ', 'schtask schdule task ')
-        cmdline1 = cmdline1.replace('grep ', 'grep search ')
-        cmdline1 = cmdline1.replace('find ', 'find search ')
-        cmdline1 = cmdline1.replace('chmod ', 'chmod modify file permission ')
-        cmdline1 = cmdline1.replace('chown ', 'chown modify file permission ')
-        cmdline1 = cmdline1.replace('execve ', 'execute ')
-        cmdline1 = cmdline1.replace('recvmsg ', 'recvmsg receive message ')
-        cmdline1 = cmdline1.replace('recvfrom ', 'recvfrom receive message ')
-        cmdline1 = cmdline1.replace('sendmsg ', 'sendmsg send message ')
-        cmdline1 = cmdline1.replace('sendto ', 'sendto send message ')
-        cmdline1 = cmdline1.replace('tar ', 'tar compress ')
-        cmdline1 = cmdline1.replace('zip ', 'zip compress ')
-        '''
-        return subject1, verb1, object1, cmdline1
 
 
 def sanitize_string(s):
