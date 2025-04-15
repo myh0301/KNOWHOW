@@ -149,11 +149,12 @@ if __name__ == "__main__":
                 continue  # 忽略噪声点
             label = int(label)
             if label not in cluster_results:
-                cluster_results[label] = {'points': [], 'center': cluster_centers[label]}
+                cluster_results1[label] = {'points': [], 'center': cluster_centers[label]}
                 cluster_results[label] = {'points': [], 'center': cluster_centers[label]}
             cluster_results[label]['points'].append((labels[i], X[i].tolist()))
 
         # 将结果保存到本地文件
+        #print(cluster_results1)
         with open('clustered_phrases_dbscan.json', 'w') as f:
             json.dump(cluster_results1, f)
 
