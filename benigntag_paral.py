@@ -313,11 +313,6 @@ def log_svo_extract_nostril(log):
                     return ssss, ssss, ssss, ssss
             
             #if(s["evt.args"].find("-n.s/^cpu\\s//p./proc/stat.") != -1):
-        subject1 = subject1.replace('\n', '')
-        subject1 = subject1.replace('\\', '++')
-        subject1 = subject1.replace('\\', '++')
-        subject1 = subject1.replace('$', '_')
-        subject1 = subject1.replace('\"', '')
         subject1 = subject1.replace('sh ', 'shell ')
         subject1 = subject1.replace('bash ', 'bash shell ')
         subject1 = subject1.replace('cp ', 'copy ')
@@ -357,11 +352,6 @@ def log_svo_extract_nostril(log):
         verb1 = verb1.replace('rmdir', 'rmdir remove directory')
         verb1 = verb1.replace('chmod ', 'chmod modify file permission ')
 
-        object1 = object1.replace('\n', '')
-        object1 = object1.replace('\\', '++')
-        object1 = object1.replace('\\', '++')
-        object1 = object1.replace('$', '_')
-        object1 = object1.replace('\"', '')
         object1 = object1.replace('sh ', 'shell ')
         object1 = object1.replace('bash ', 'bash shell ')
         object1 = object1.replace('cp ', 'copy ')
@@ -390,11 +380,6 @@ def log_svo_extract_nostril(log):
         object1 = object1.replace('tar ', 'tar compress ')
         object1 = object1.replace('zip ', 'zip compress ')
 
-        cmdline1 = cmdline1.replace('\n', '')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('\\', '++')
-        cmdline1 = cmdline1.replace('$', '_')
-        cmdline1 = cmdline1.replace('\"', '')
         cmdline1 = cmdline1.replace('sh ', 'shell ')
         cmdline1 = cmdline1.replace('bash ', 'bash shell ')
         cmdline1 = cmdline1.replace('cp ', 'copy ')
