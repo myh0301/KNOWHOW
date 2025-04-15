@@ -17,6 +17,7 @@ from sklearn.metrics.pairwise import *
 #from parse_technique_result import sanitize_string
 import re, json, sys
 from sklearn.metrics.pairwise import cosine_similarity
+from multiprocessing import Pool
 M = 5
 start  = time.perf_counter()
 
@@ -78,29 +79,33 @@ def log_svo_extract(log):
         if subject1.find("->") != -1:
             ss = subject1.split(' ')[0]
             ss = ss.split('->')
-            ip1 = str(ss[0])
-            ip2 = str(ss[1])
-            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                ip1 = "internal network address"
-            else :
-                ip1 = "external network address"
-            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                ip2 = "to internal network address"
-            else :
-                ip2 = "to external network address"
+            if len(ss) >= 2:
+                ip1 = str(ss[0])
+                ip2 = str(ss[1])
+                if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                    ip1 = "internal network address"
+                else :
+                    ip1 = "external network address"
+                if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                    ip2 = "to internal network address"
+                else :
+                    ip2 = "to external network address"
+                subject1 = ip1 + ' ' + ip2
         if object1.find("->") != -1:
             ss = subject1.split(' ')[0]
             ss = ss.split('->')
-            ip1 = str(ss[0])
-            ip2 = str(ss[1])
-            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                ip1 = "internal network address"
-            else :
-                ip1 = "external network address"
-            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                ip2 = "to internal network address"
-            else :
-                ip2 = "to external network address"
+            if len(ss) >= 2:
+                ip1 = str(ss[0])
+                ip2 = str(ss[1])
+                if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                    ip1 = "internal network address"
+                else :
+                    ip1 = "external network address"
+                if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                    ip2 = "to internal network address"
+                else :
+                    ip2 = "to external network address"
+                object1 = ip1 + ' ' + ip2
         else:
             ssss = "None111"
             if(subject1 != None):
@@ -253,31 +258,33 @@ def log_svo_extract_nostril(log):
         if subject1.find("->") != -1:
             ss = subject1.split(' ')[0]
             ss = ss.split('->')
-            ip1 = str(ss[0])
-            ip2 = str(ss[1])
-            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                ip1 = "internal network address"
-            else :
-                ip1 = "external network address"
-            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                ip2 = " to internal network address"
-            else :
-                ip2 = " to external network address"
-            subject1 = ip1 + ip2
+            if len(ss) >= 2:
+                ip1 = str(ss[0])
+                ip2 = str(ss[1])
+                if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                    ip1 = "internal network address"
+                else :
+                    ip1 = "external network address"
+                if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                    ip2 = "to internal network address"
+                else :
+                    ip2 = "to external network address"
+                subject1 = ip1 + ' ' + ip2
         if object1.find("->") != -1:
             ss = subject1.split(' ')[0]
             ss = ss.split('->')
-            ip1 = str(ss[0])
-            ip2 = str(ss[1])
-            if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
-                ip1 = "internal network address"
-            else :
-                ip1 = "external network address"
-            if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
-                ip2 = " to internal network address"
-            else :
-                ip2 = " to external network address"
-            object1 = ip1 + ip2
+            if len(ss) >= 2:
+                ip1 = str(ss[0])
+                ip2 = str(ss[1])
+                if ip1.startswith('10.') or ip1.startswith('192.168') or ip1.startswith('172.16'):
+                    ip1 = "internal network address"
+                else :
+                    ip1 = "external network address"
+                if ip2.startswith('10.') or ip2.startswith('192.168') or ip2.startswith('172.16'):
+                    ip2 = "to internal network address"
+                else :
+                    ip2 = "to external network address"
+                object1 = ip1 + ' ' + ip2
         else:
             ssss = "None111"
             if(subject1 != None):
@@ -454,13 +461,15 @@ def sanitize_string(s):
                     newline.append('hash')
             except Exception as e:
                 print(s)
-    split_path = [item for item in filter(lambda x:x != '',newline)]
-    return split_path
+    #split_path = [item for item in filter(lambda x:x != '',newline)]
+    #return split_path
+    for item in filter(lambda x:x != '',newline):
+        sss += str(item) + ' '
+    return sss[:-1]
 
 
-
-def process_log(s, nostril=False):
-    if nostril:
+def process_log(s, nostril=False, top_keys=5):
+    if int(nostril):
         sub, verb, obj, cmd = log_svo_extract_nostril(s)
     else:
         sub, verb, obj, cmd = log_svo_extract(s)
@@ -474,13 +483,13 @@ def process_log(s, nostril=False):
     obj_emb = encode_string(model, obj)
     cmd_emb = encode_string(model, cmd)
 
-    sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, topn=3)
+    sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, top_n=3)
     sub_similarity_scores = calculate_similarities(sub_emb, cluster_results, sub_closest_labels)
-    verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, topn=3)
+    verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, top_n=3)
     verb_similarity_scores = calculate_similarities(verb_emb, cluster_results, verb_closest_labels)
-    obj_closest_labels = find_closest_clusters(obj_emb, cluster_results, topn=3)
+    obj_closest_labels = find_closest_clusters(obj_emb, cluster_results, top_n=3)
     obj_similarity_scores = calculate_similarities(obj_emb, cluster_results, obj_closest_labels)
-    cmd_closest_labels = find_closest_clusters(cmd_emb, cluster_results, topn=3)
+    cmd_closest_labels = find_closest_clusters(cmd_emb, cluster_results, top_n=3)
     cmd_similarity_scores = calculate_similarities(cmd_emb, cluster_results, cmd_closest_labels)
 
     total_similarity_scores = {}
@@ -505,15 +514,15 @@ def process_log(s, nostril=False):
             total_similarity_scores[key] = 0
         total_similarity_scores[key] += score
     sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:top_keys]
-    ll, ss = '', '', ''
+    ll, ss = '', ''
 
-    # 格式化输出
+
     for i in range(len(sorted_scores)):
         if sorted_scores[i][1] != 0:
-            ll += (str(sorted_scores[i][0]) + ' ')  # 技术标签
-            ss += (str(sorted_scores[i][1]) + ' ')  # 相似度得分
+            ll += (str(sorted_scores[i][0]) + ' ')  
+            ss += (str(sorted_scores[i][1]) + ' ') 
     s["tech_num"] = ll[:-1]
-    s['tech_score'] = ss[:-1]  # 移除最后一个多余的空格
+    s['tech_score'] = ss[:-1] 
     if sorted_scores:
         s["anomaly_score"] = sorted_scores[0][1]
     else:
@@ -523,6 +532,7 @@ def process_log(s, nostril=False):
 
 filen = sys.argv[1]
 nostril = sys.argv[2]
+top_keys = 5
 
 f1 = open('./benign_tag/' +sys.argv[1] + '_tag.json', 'w')
 
@@ -582,27 +592,24 @@ with open(sys.argv[1], 'r') as f:
                 total_similarity_scores[key] = 0
             total_similarity_scores[key] += score
         sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:top_keys]
-        ll, ss = '', '', ''
+        ll, ss = '', ''
 
-        # 格式化输出
         for i in range(len(sorted_scores)):
             if sorted_scores[i][1] != 0:
-                ll += (str(sorted_scores[i][0]) + ' ')  # 技术标签
-                ss += (str(sorted_scores[i][1]) + ' ')  # 相似度得分
+                ll += (str(sorted_scores[i][0]) + ' ')  
+                ss += (str(sorted_scores[i][1]) + ' ')  
         s["tech_num"] = ll[:-1]
-        s['tech_score'] = ss[:-1]  # 移除最后一个多余的空格
+        s['tech_score'] = ss[:-1] 
         if sorted_scores:
             s["anomaly_score"] = sorted_scores[0][1]
         else:
             s["anomaly_score"] = 0
-
+        max_score = max(sorted_scores[0][1], max_score)
         json.dump(s, f1)
         f1.write("\n")
 
 
-    print("line_num= ", line)
     print("max_score= ", max_score)
-    print("special_num= ", specialnum)
     f1.close()
 
 
