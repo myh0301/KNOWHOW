@@ -20,6 +20,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from multiprocessing import Pool
 M = 5
 start  = time.perf_counter()
+check_nnn = 0
 
 with open('clustered_phrases_dbscan.json', 'r') as f:
     cluster_results = json.load(f)
@@ -515,7 +516,8 @@ def process_log(s, nostril=False, top_keys=5):
         if key not in total_similarity_scores:
             total_similarity_scores[key] = 0
         total_similarity_scores[key] += score
-    sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:top_keys]
+    sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:min(top_keys, len(total_similarity_scores.keys()))]
+    print("44444")
     ll, ss = '', ''
 
     for i in range(len(sorted_scores)):
@@ -528,7 +530,7 @@ def process_log(s, nostril=False, top_keys=5):
         s["anomaly_score"] = sorted_scores[0][1]
     else:
         s["anomaly_score"] = 0
-    
+    print("55555")
     return s
 
 
