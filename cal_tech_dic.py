@@ -94,15 +94,38 @@ if __name__ == "__main__":
 
         # 创建聚类结果字典
         cluster_results = {}
+        cluster_results1 = {}
         for i, label in enumerate(labels_ms):
             label = int(label)
             if label not in cluster_results:
+                cluster_results1[label] = {'points': [], 'center': cluster_centers[label].tolist()}
                 cluster_results[label] = {'points': [], 'center': cluster_centers[label].tolist()}
             cluster_results[label]['points'].append((labels[i], X[i].tolist()))
 
         # 将结果保存到本地文件
         with open('./meanshift_clustered_phrases.json', 'w') as f:
-            json.dump(cluster_results, f)
+            json.dump(cluster_results1, f)
+        
+        cluster_key_vectors = {}
+        for label, info in cluster_results.items():
+            key_vectors_sum = {}
+            
+            for original_phrase, vector in info['points']:
+                key = original_phrase.split('*****')[0]
+                
+                if key not in key_vectors_sum:
+                    key_vectors_sum[key] = np.zeros_like(vector)
+                    
+                key_vectors_sum[key] += np.array(vector)
+            
+            
+            cluster_key_vectors[label] = {key: vector.tolist() for key, vector in key_vectors_sum.items()}
+
+        # 将结果保存到本地文件
+        with open('meanshift_cluster_key_vectors.json', 'w') as f:
+            #json.dump({label: {key: vector.tolist() for key, vector in vectors.items()} for label, vectors in cluster_key_vectors.items()}, f)        
+            json.dump(cluster_key_vectors, f)    
+        
     else:
         # 应用DBSCAN聚类
         dbscan = DBSCAN(eps=0.5, min_samples=5)
@@ -120,18 +143,40 @@ if __name__ == "__main__":
 
         # 创建聚类结果字典
         cluster_results = {}
+        cluster_results1 = {}
         for i, label in enumerate(labels_dbscan):
             if label == -1:
                 continue  # 忽略噪声点
             label = int(label)
             if label not in cluster_results:
                 cluster_results[label] = {'points': [], 'center': cluster_centers[label]}
+                cluster_results[label] = {'points': [], 'center': cluster_centers[label]}
             cluster_results[label]['points'].append((labels[i], X[i].tolist()))
 
         # 将结果保存到本地文件
         with open('clustered_phrases_dbscan.json', 'w') as f:
-            json.dump(cluster_results, f)
+            json.dump(cluster_results1, f)
 
+        cluster_key_vectors = {}
+        for label, info in cluster_results.items():
+            key_vectors_sum = {}
+            
+            for original_phrase, vector in info['points']:
+                key = original_phrase.split('*****')[0]
+                
+                if key not in key_vectors_sum:
+                    key_vectors_sum[key] = np.zeros_like(vector)
+                    
+                key_vectors_sum[key] += np.array(vector)
+            
+            cluster_key_vectors[label] = {key: vector.tolist() for key, vector in key_vectors_sum.items()}
+
+        # 将结果保存到本地文件
+        with open('dbscan_cluster_key_vectors.json', 'w') as f:
+            #json.dump({label: {key: vector.tolist() for key, vector in vectors.items()} for label, vectors in cluster_key_vectors.items()}, f)        
+            json.dump(cluster_key_vectors, f)    
+    
+        
                 
 
     print("Phrase vectors have been saved to 'phrase_vectors.json'")
