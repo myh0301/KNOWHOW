@@ -10,8 +10,8 @@ print(my_text)
 print(type(my_text))
 
 combined_texts.extend(my_text)  
-model = FastText(vector_size=256, window=5, min_count=2, sample = 1e-2, workers=30, negative = 5)
+model = FastText(vector_size=128, window=5, min_count=2, sample = 1e-2, workers=30, negative = 5)
 model.build_vocab(corpus_iterable=combined_texts) 
 model.train(corpus_iterable=combined_texts, total_examples=len(combined_texts), epochs=50)
 
-model.save('./technique-embedding-256.model')
+model.save('./technique-embedding-128.model')

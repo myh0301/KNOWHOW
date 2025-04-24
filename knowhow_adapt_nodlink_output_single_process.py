@@ -1,10 +1,11 @@
 import json
+import json
 import copy
 import time
 import string
 import re
 import sys
-from nostril import nonsense
+#from nostril import nonsense
 import numpy as np
 from numpy import tile
 import math
@@ -18,8 +19,7 @@ from sklearn.metrics.pairwise import *
 import re, json, sys
 from sklearn.metrics.pairwise import cosine_similarity
 from multiprocessing import Pool
-import torch
-from torch.nn.functional import cosine_similarity
+import networkx as nx
 M = 5
 start  = time.perf_counter()
 check_nnn = 0
@@ -30,87 +30,34 @@ with open('clustered_phrases_dbscan.json', 'r') as f:
 with open('dbscan_cluster_key_vectors.json', 'r') as fkey:
     cluster_key_vectors = json.load(fkey)
 
-for label, vectors in cluster_key_vectors.items():
-    for key, vector in vectors.items():
-        cluster_key_vectors[label][key] = torch.tensor(vector, dtype=torch.float32).cuda()
-
 
 model_path = './technique-embedding-128.model'
 model = FastText.load(model_path)
 
+
+
+
 def encode_string(model, string):
+
     words = string.split()
     vectors = [model.wv[word] for word in words if word in model.wv]
     
     if not vectors:
         return None  # 如果没有有效的词向量，返回None
     
-    avg_vector = np.mean(vectors, axis=0)
-    tensor_avg_vector = torch.tensor(avg_vector, dtype=torch.float32).cuda()
-    
-    return tensor_avg_vector
-
-'''
-def find_closest_clusters(target_vector, cluster_results, top_n=3):
-    similarities = []
-    for label, phrases in cluster_results.items():
-        for phrase_info in phrases:
-            _, vector = phrase_info
-            sim = cosine_similarity([target_vector], [vector])[0][0]
-            similarities.append((label, sim))
-    #print('1')
-    similarities.sort(key=lambda x: x[1], reverse=True)
-    closest_labels = list(set([label for label, _ in similarities[:top_n]]))
-    #print('2')
-    return closest_labels
-'''
+    return np.mean(vectors, axis=0)
 
 def find_closest_clusters(target_vector, cluster_results, top_n=5):
     similarities = []
     for label, info in cluster_results.items():
-        center_vector = torch.tensor(info['center'], dtype=torch.float32).cuda()
-        sim = cosine_similarity(target_vector.unsqueeze(0), center_vector.unsqueeze(0)).item()
+        center_vector = np.array(info['center'])
+        sim = cosine_similarity([target_vector], [center_vector])[0][0]
         similarities.append((label, sim))
     
     similarities.sort(key=lambda x: x[1], reverse=True)
     closest_labels = [label for label, _ in similarities[:top_n]]
     return closest_labels
 
-'''
-def calculate_similarities(target_vector, cluster_results, closest_labels):
-    similarity_scores = {}
-    
-    for label in closest_labels:
-        for phrase_info in cluster_results[label]:
-            original_phrase, vector = phrase_info
-            key = original_phrase.split('*****')[0]  # 提取key
-            
-            sim = cosine_similarity([target_vector], [vector])[0][0]
-            
-            if key not in similarity_scores:
-                similarity_scores[key] = 0
-            similarity_scores[key] += sim
-    
-    return similarity_scores
-'''
-'''
-def calculate_similarities(target_vector, cluster_results, closest_labels):
-    similarity_scores = {}
-    
-    for label in closest_labels:
-        for phrase_info in cluster_results[label]['points']:
-            original_phrase, vector = phrase_info
-            key = original_phrase.split('*****')[0]  # 提取key
-            
-            sim = cosine_similarity([target_vector], [vector])[0][0]
-            
-            if key not in similarity_scores:
-                similarity_scores[key] = 0
-            similarity_scores[key] += sim
-    
-    return similarity_scores
-'''
-'''
 def calculate_similarities(target_vector, cluster_key_vectors, closest_labels):
     similarity_scores = {}
     
@@ -124,26 +71,12 @@ def calculate_similarities(target_vector, cluster_key_vectors, closest_labels):
             similarity_scores[key] += sim
     
     return similarity_scores
-'''
-def calculate_similarities(target_vector, cluster_key_vectors, closest_labels):
-    similarity_scores = {}
-    
-    for label in closest_labels:
-        key_vectors = cluster_key_vectors.get(str(label), {})
-        for key, avg_vector in key_vectors.items():
-            sim = cosine_similarity(target_vector.unsqueeze(0), avg_vector.unsqueeze(0)).item()
-            
-            if key not in similarity_scores:
-                similarity_scores[key] = 0
-            similarity_scores[key] += sim
-    
-    return similarity_scores
 
 def log_svo_extract(log):
-    subject1 = log['proc.name']
-    object1 = log['fd.name']
-    verb1 = log['evt.type']
-    cmdline1 = log['proc.cmdline'] + ' ' + log['proc.pcmdline']
+    subject1 = log[2]
+    object1 = log[4]
+    verb1 = log[3]
+    cmdline1 = log[5]
     ssss = "None111"
     if subject1.find("->") != -1:
         ss = subject1.split(' ')[0]
@@ -315,10 +248,10 @@ def log_svo_extract(log):
     return subject1, verb1, object1, cmdline1
 
 def log_svo_extract_nostril(log):
-    subject1 = log['proc.name']
-    object1 = log['fd.name']
-    verb1 = log['evt.type']
-    cmdline1 = log['proc.cmdline'] + ' ' + log['proc.pcmdline']
+    subject1 = log[2]
+    object1 = log[4]
+    verb1 = log[3]
+    cmdline1 = log[5]
     ssss = "None111"
     if subject1.find("->") != -1:
         ss = subject1.split(' ')[0]
@@ -531,60 +464,54 @@ def sanitize_string(s):
         sss += str(item) + ' '
     return sss[:-1]
 
-
-
-def process_log(s, nostril=False, top_keys=5):
+def process_log(s, nostril=False, top_keys=3):
     if int(nostril):
         sub, verb, obj, cmd = log_svo_extract_nostril(s)
     else:
         sub, verb, obj, cmd = log_svo_extract(s)
     if sub == "None111":
-        s["tech_num"] = 'None'
-        s['tech_score'] = '0'
-        s["anomaly_socre"] = '0'
-        return s
+        g[s[0]][s[1]]["tech_num"] = 'None'
+        s[s[0]][s[1]]['tech_score'] = '0'
+        g[s[0]][s[1]]["anomaly_socre"] = '0'
+        return 
 
     total_similarity_scores = {}
     if sub != "":
         sub_emb = encode_string(model, sub)
-        if sub_emb is not None:
-            sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, top_n=3)
-            sub_similarity_scores = calculate_similarities(sub_emb, cluster_key_vectors, sub_closest_labels)
-            for key, score in sub_similarity_scores.items():
-                if key not in total_similarity_scores:
-                    total_similarity_scores[key] = 0
-                total_similarity_scores[key] += score
+        sub_closest_labels = find_closest_clusters(sub_emb, cluster_results, top_n=5)
+        sub_similarity_scores = calculate_similarities(sub_emb, cluster_key_vectors, sub_closest_labels)
+        for key, score in sub_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
     if verb != "":
         verb_emb = encode_string(model, verb)
-        if verb_emb is not None:
-            verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, top_n=3)
-            verb_similarity_scores = calculate_similarities(verb_emb, cluster_key_vectors, verb_closest_labels)
-            for key, score in verb_similarity_scores.items():
-                if key not in total_similarity_scores:
-                    total_similarity_scores[key] = 0
-                total_similarity_scores[key] += score
+        verb_closest_labels = find_closest_clusters(verb_emb, cluster_results, top_n=5)
+        verb_similarity_scores = calculate_similarities(verb_emb, cluster_key_vectors, verb_closest_labels)
+        for key, score in verb_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
     if obj != "":
         obj_emb = encode_string(model, obj)
-        if obj_emb is not None:
-            obj_closest_labels = find_closest_clusters(obj_emb, cluster_results, top_n=3)
-            obj_similarity_scores = calculate_similarities(obj_emb, cluster_key_vectors, obj_closest_labels)
-            for key, score in obj_similarity_scores.items():
-                if key not in total_similarity_scores:
-                    total_similarity_scores[key] = 0
-                total_similarity_scores[key] += score
+        obj_closest_labels = find_closest_clusters(obj_emb, cluster_results, top_n=5)
+        obj_similarity_scores = calculate_similarities(obj_emb, cluster_key_vectors, obj_closest_labels)
+        for key, score in obj_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
     if cmd != "":
         cmd_emb = encode_string(model, cmd)
-        if cmd_emb is not None:
-            cmd_closest_labels = find_closest_clusters(cmd_emb, cluster_results, top_n=3)
-            cmd_similarity_scores = calculate_similarities(cmd_emb, cluster_key_vectors, cmd_closest_labels)
-            for key, score in cmd_similarity_scores.items():
-                if key not in total_similarity_scores:
-                    total_similarity_scores[key] = 0
-                total_similarity_scores[key] += score
+        cmd_closest_labels = find_closest_clusters(cmd_emb, cluster_results, top_n=5)
+        cmd_similarity_scores = calculate_similarities(cmd_emb, cluster_key_vectors, cmd_closest_labels)
+        for key, score in cmd_similarity_scores.items():
+            if key not in total_similarity_scores:
+                total_similarity_scores[key] = 0
+            total_similarity_scores[key] += score
 
     #print('22222')
 
-    sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:min(top_keys, len(total_similarity_scores))]
+    sorted_scores = sorted(total_similarity_scores.items(), key=lambda item: item[1], reverse=True)[:min(top_keys, len(total_similarity_scores.keys()))]
     print("44444")
     ll, ss = '', ''
 
@@ -592,26 +519,143 @@ def process_log(s, nostril=False, top_keys=5):
         if sorted_scores[i][1] != 0:
             ll += (str(sorted_scores[i][0]) + ' ') 
             ss += (str(sorted_scores[i][1]) + ' ') 
-    s["tech_num"] = ll[:-1]
-    s['tech_score'] = ss[:-1] 
+    g[s[0]][s[1]]["tech_num"] = ll[:-1]
+    g[s[0]][s[1]]['tech_score'] = ss[:-1] 
     if sorted_scores:
-        s["anomaly_socre"] = sorted_scores[0][1]
+        g[s[0]][s[1]]["anomaly_socre"] = sorted_scores[0][1]
     else:
-        s["anomaly_socre"] = 0
+        g[s[0]][s[1]]["anomaly_socre"] = 0
     print("55555")
-    return s
+    return
+
+tech2tac = {}
+f2 = open('./tech2tac.txt', 'r')
+for l in f2.readlines():
+    l = l[:-1]
+    tmp = l.split('\t')
+    tech = tmp[0]
+    tac = tmp[1]
+    tech2tac[tech]= tac
+f2.close()
+
+tac2stage = {}
+f2 = open('./tac2stage.txt', 'r')
+for l in f2.readlines():
+    l = l[:-1]
+    tmp = l.split('...')
+    tac = tmp[0]
+    stage = tmp[1]
+    for tacc in tac.split(', '):
+        tac2stage[tacc]= stage
+f2.close()
 
 
 filen = sys.argv[1]
 nostril = sys.argv[2]
-f1 = open('./anomaly_tag/' +str(filen) +'_tag.json', 'w')
-with open(str(filen) +'.json', 'r') as f:
-    logs = [json.loads(line) for line in f.readlines()]
-    pool = Pool(processes=30) 
-    results = pool.starmap(process_log, [(log, nostril, 3) for log in logs])
-    pool.close()
-    pool.join()
+g = nx.DiGraph(nx.nx_pydot.read_dot(filen))
+if True:
+    logs = [(g[e[0]], g[e[1]], g[e[0]]['label'], g[e[0]][e[1]]['syscall'] ,g[e[1]]['label'], g[e[0]][e[1]]['cmd']) for e in g.edges()]
+    for log in logs:
+        process_log(log, nostril, 3)
+    #pool = Pool(processes=30) 
+    #results = pool.starmap(process_log, [(log, nostril, 3) for log in logs])
+    #pool.close()
+    #pool.join()
         
-    for s in results:
-        json.dump(s, f1)
-        f1.write("\n")
+    #for s in results:
+    #    json.dump(s, f1)
+    #    f1.write("\n")
+
+line = 0
+#with open('./anomaly.json', 'r') as f:
+i111 = 0
+
+for e in g.edges():
+    if True:
+        ll = ''
+        tac_score = {}
+        stage_score = {}
+        if g[e[0]][e[1]]['tech_num']!= '':
+            tech_num_list  = g[e[0]][e[1]]['tech_num'].split(' ')
+            tech_score_list = g[e[0]][e[1]]['tech_socre'].split(' ')
+            for i in range(0, len(tech_num_list)):
+                if tech_num_list[i] not in tac_score.keys():
+                    tac_score[tech_num_list[i]] = tech_score_list[i]
+                else:
+                    tac_score[tech_num_list[i]] += tech_score_list[i]
+        tac_score_sort = sorted(tac_score.items(), key = lambda x:x[1],reverse=True)
+ 
+        if True:
+            l = list(tac_score_sort)
+            g[e[0]][e[1]]['tac_name'] = ''
+            g[e[0]][e[1]]['tac_score'] = ''
+            for i in l:
+                g[e[0]][e[1]]['tac_name'] += i[0] + ' '
+                g[e[0]][e[1]]['tac_score'] += str(i[1]) + ' '
+                #stage_score_calculation
+                stagename = tac2stage[i[0]]
+                if not stagename in stage_score.keys():
+                    stage_score[stagename] = float(i[1])
+                else:
+                    stage_score[stagename] += float(i[1])
+        
+        stage_score_sort = sorted(stage_score.items(), key = lambda x:x[1],reverse=True)
+        if len(stage_score_sort) >4:
+            l = list(stage_score_sort)
+            tn0, ts0 = l[0]
+            tn1, ts1 = l[1]
+            tn2, ts2 = l[2]
+            tn3, ts3 = l[3]
+            g[e[0]][e[1]]['stage_name'] = tn0 + '***' + tn1 + '***' + tn2 + '***' + tn3 
+            g[e[0]][e[1]]['stage_score'] = str(ts0) + '***' + str(ts1) + '***' + str(ts2) + '***' + str(ts3) 
+        else:
+            g[e[0]][e[1]]['stage_name'] = ''
+            g[e[0]][e[1]]['stage_score'] = ''
+            l = list(stage_score_sort)
+            for i in l:
+                g[e[0]][e[1]]['stage_name'] += i[0] + '***'
+                g[e[0]][e[1]]['stage_score'] += str(i[1]) + '***'
+            g[e[0]][e[1]]['stage_name'] += g[e[0]][e[1]]['stage_name'][:-3]
+            g[e[0]][e[1]]['stage_score'] += g[e[0]][e[1]]['stage_score'][:-3]
+
+iik = 0
+for n in g.nodes():
+    iik += 1
+    if len(str(n)) > 5:
+        g.nodes[n]['stage'] = ''
+        stagedic = {}
+        if iik == 16:
+            print(stagedic)
+        for outedge in g.out_edges(n):
+            sn = g[outedge[0]][outedge[1]]['stage_name'].split('***')
+            sc = g[outedge[0]][outedge[1]]['stage_score'].split('***')
+            if iik == 16:
+                print(n)
+                print(outedge)
+                print(sn)
+                print(sc)
+                print(g[outedge[0]][outedge[1]]['stage_name'])
+                print(g[outedge[0]][outedge[1]]['stage_score'])
+            
+            for i in range(0, len(sn)):
+                if not sn[i] in stagedic.keys():
+                    stagedic[sn[i]] = float(sc[i])
+                else:
+                    stagedic[sn[i]] += float(sc[i])
+        if iik == 16:
+            print(stagedic)
+        stagedic_sort = sorted(stagedic.items(), key = lambda x:x[1],reverse=True)
+        if iik == 16:
+            print(stagedic)
+        l = list(stagedic_sort)
+        if len(l) != 0:
+            g.nodes[n]['stage'], g.nodes[n]['stage_score'] = l[0]
+            g.nodes[n]['label'] = g.nodes[n]['stage'] + '  ***  ' + str(g.nodes[n]['stage_score']) + '  ***  ' + g.nodes[n]['label']
+        else:
+            g.nodes[n]['stage'], g.nodes[n]['stage_score'] = "null", 0
+            g.nodes[n]['label'] = g.nodes[n]['stage'] + '  ***  ' + str(g.nodes[n]['stage_score']) + '  ***  ' + g.nodes[n]['label']
+        if iik ==16 :
+            print(stage_score_sort)
+            print(g.nodes[n]['label'])
+
+nx.drawing.nx_agraph.write_dot(g, './lifecycle_'+filen.split('0')[0].split('/')[-1]+'.dot')

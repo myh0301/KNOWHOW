@@ -9,7 +9,7 @@ M = 5
 #filename = './all_description_new.txt'
 #model = fasttext.train_unsupervised(filename, 'skipgram', dim=150, epoch=10, thread=10, lr=0.1)
 
-g = nx.DiGraph(nx.nx_pydot.read_dot('tag1.dot'))
+g = nx.DiGraph(nx.nx_pydot.read_dot('./dot/whole_graph_new_new_new_new0.dot'))
 
 print(g.number_of_nodes())
 print(g.number_of_edges())

@@ -207,6 +207,3 @@ if __name__ == "__main__":
     plt.title('Estimated number of clusters: %d' % len(unique_labels))
     plt.legend()
     plt.savefig('cluster_visualization.png')
-
-
-

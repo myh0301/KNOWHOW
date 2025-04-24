@@ -1,0 +1,7 @@
+Reconnaissance, Initial Access...Initial Compromise
+Execution, Resource Development, Command and Control...Establish Foothold
+Privilege Escalation, Credential Access...Escalate Privilege
+Discovery, Collection...Internal Reconnaissance
+Lateral Movement...Move Laterally
+Persistence, Defense Evasion...Maintain Persistence
+Exfiltration, Impact...Complete Mission

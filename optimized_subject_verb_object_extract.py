@@ -529,4 +529,3 @@ def findSVOs(tokens):
 
     return list(set(svos))
 
-

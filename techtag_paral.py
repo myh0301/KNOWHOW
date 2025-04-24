@@ -4,7 +4,7 @@ import time
 import string
 import re
 import sys
-#from nostril import nonsense
+from nostril import nonsense
 import numpy as np
 from numpy import tile
 import math
@@ -122,7 +122,7 @@ def log_svo_extract(log):
     subject1 = log['proc.name']
     object1 = log['fd.name']
     verb1 = log['evt.type']
-    cmdline1 = log['proc.cmdline'] + ' ' + log['proc.pcmdline']
+    cmdline1 = log['proc.cmdline']
     ssss = "None111"
     if subject1.find("->") != -1:
         ss = subject1.split(' ')[0]
@@ -298,7 +298,7 @@ def log_svo_extract_nostril(log):
     subject1 = log['proc.name']
     object1 = log['fd.name']
     verb1 = log['evt.type']
-    cmdline1 = log['proc.cmdline'] + ' ' + log['proc.pcmdline']
+    cmdline1 = log['proc.cmdline']
     ssss = "None111"
     if subject1.find("->") != -1:
         ss = subject1.split(' ')[0]
@@ -572,9 +572,9 @@ def process_log(s, nostril=False, top_keys=5):
     s["tech_num"] = ll[:-1]
     s['tech_score'] = ss[:-1] 
     if sorted_scores:
-        s["anomaly_score"] = sorted_scores[0][1]
+        s["anomaly_socre"] = sorted_scores[0][1]
     else:
-        s["anomaly_score"] = 0
+        s["anomaly_socre"] = 0
     print("55555")
     return s
 
@@ -582,10 +582,10 @@ def process_log(s, nostril=False, top_keys=5):
 filen = sys.argv[1]
 nostril = sys.argv[2]
 f1 = open('./anomaly_tag/' +str(filen) +'_tag.json', 'w')
-with open(str(filen) +'.json', 'r') as f:
+with open('./anomaly_data/'+ str(filen) +'.json', 'r') as f:
     logs = [json.loads(line) for line in f.readlines()]
-    pool = Pool(processes=30) 
-    results = pool.starmap(process_log, [(log, nostril, 5) for log in logs])
+    pool = Pool(processes=12) 
+    results = pool.starmap(process_log, [(log, nostril, 3) for log in logs])
     pool.close()
     pool.join()
         
